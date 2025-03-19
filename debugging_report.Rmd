@@ -1,0 +1,216 @@
+---
+title: "Debugging report prepared for the Criminal Justice Innovation Lab"
+author: "Eric Parajon"
+date: "2025-03-19"
+output: 
+ html_document:
+   toc: true
+   toc_depth: 3
+   number_sections: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(cache = TRUE, include = TRUE, echo=TRUE, eval=TRUE)
+```
+
+# Preamble
+The following is a brief debugging report that: 
+
+* Provides a description of errors encountered in the `get-historical-weathe.R` file
+
+* Includes approach and rationale for corrections 
+
+* Describes alterations/improvements I made to the original code file.
+
+# Description of errors and approach to corrections
+
+To begin I modified my R global options with the following line of code `options(error = function() traceback(3))`. This addition customizes what happens when an error occurs by for printing a stacktrace (3 deep) on error rather than just printing the error message thus making it easier to identify what caused the error to occur. 
+
+Briefly, my approach to coding is to think of R code in terms of digestible chunks so that’s how I started debugging this code starting with the preamble. It’s also why in my alterations to the code file I adding clear sections and headers. As a result of following this approach I noticed an error on the first line of the code file.
+
+**1a. Error 1:** the `library()` package to load the namespace of a package was misspelled as seen in the code chunk below. This resulted in the following error `Error in libray(httr) : could not find function "libray"`.
+
+```{r, include = TRUE, eval = FALSE}
+libray(httr)
+```
+**1b. Fix 1:** I corrected the spelling of `library()`. 
+
+```{r, include = TRUE, eval = FALSE}
+library(httr)
+
+```
+
+**2a. Error 2:** Progressing through the preamble to the `params` call, I again observed a misspelling in this case `temperture_unit`.
+```{r, include = TRUE, eval = FALSE}
+  temperture_unit = "fahrenheit",
+```
+
+**2b. Fix 2:**
+I corrected the spelling as seen below:
+```{r, include = TRUE, eval = FALSE}
+params <- list(
+  latitude = 40.7128,
+  longitude = -74.0060,
+  start_date = "2014-01-02",
+  end_date = "2024-12-31",
+  temperature_unit = "fahrenheit",
+  hourly = "temperature_2m,precipitation,relative_humidity_2m,dew_point_2m",
+  timezone = "America/New_York"
+)
+```
+
+**3a. Error 3:** Now moving to the actual API call, the following line returned an error `weather_data <- fromJSON(json_data, flatten = TRUE)`. The error with traceback is shown below. This error indicates that there may be an issue with the `json_data` being an empty object (we know the error occurs inside the `fromJSON` function). 
+
+```{r, include = TRUE, eval = FALSE}
+4: parse_string(txt, bigint_as_char)
+3: parseJSON(txt, bigint_as_char)
+2: parse_and_simplify(txt = txt, simplifyVector = simplifyVector, 
+       simplifyDataFrame = simplifyDataFrame, simplifyMatrix = simplifyMatrix, 
+       flatten = flatten, ...)
+1: fromJSON(json_data, flatten = TRUE)
+
+```
+
+This suspicion is confirmed by inspecting the json_data values with the `print()` which returns `[1] ""` indicating the data is empty. As `response$status` is returning `200` this indicates there wasn't an error in accessing the actual API from the `GET()` so I then turn to inspecting the rest of the call which reveals a typo `qury = params`. 
+
+3b. Fix 3: I fix the `qury` typo to `query`, re-run the `print()`, this time only calling for a small portion of the data I see output as expected.
+
+```{r, include = TRUE, eval = FALSE}
+response <- GET(url = base_url, query = params)
+
+#checking output of small portion of json_data (first 100 characters)
+print(substr(json_data, 1, 100))
+```
+
+
+**4a. Error 4:** Moving now onto the creation of the underlying dataframe for further analysis I begin by inspecting the `hourly` list generated from the API call using `str()`. This results in the following output which seems to match the desired result from the API (from the sample provided).
+```{r, include = TRUE, eval = FALSE}
+List of 5
+ $ time                : chr [1:96408] "2014-01-02T00:00" "2014-01-02T01:00" "2014-01-02T02:00" "2014-01-02T03:00" ...
+ $ temperature_2m      : num [1:96408] 29.8 29.9 29.9 29.1 29.9 30.1 30.1 29.7 29.1 28.8 ...
+ $ precipitation       : num [1:96408] 0 0 0 0 0 0.1 0.1 0 0 0 ...
+ $ relative_humidity_2m: int [1:96408] 74 74 73 71 73 77 79 79 79 79 ...
+ $ dew_point_2m        : num [1:96408] 22.5 22.7 22.5 20.9 22.3 23.8 24.5 24.1 23.5 23 ...
+```
+I then move onto the actual creation of the dataframe and notice a few issues. First, there is a typo in the creation of the `time` variable (`formt`). Additionally, the `data.frame` call refers to `hourly$temp` when the temperature is actually called `temperature_2m` in the `hourly` object. While these issues do not cause the code to "error out" I still believe it's best practices to fix.
+
+**4b. Fix 4:**
+These two changes result in the following code to generate the `df` dataframe. This results in 96408 obs. of  5 variables again our desired output:
+```{r, include = TRUE, eval = FALSE}
+df <- data.frame(
+  time = as.POSIXct(hourly$time, format = "%Y-%m-%dT%H:%M", tz = "America/New_York"),
+  temperature = hourly$temperature_2m,
+  precipitation = hourly$precipitation,
+  relative_humidity = hourly$relative_humidity_2m,
+  dew_point = hourly$dew_point_2m
+)
+```
+
+**5a. Error 5:** Moving now to the data visualization component, again here I found an issue that does not throw an error but is again best practice to fix. The first plot refers to `df$temp` which does not in fact exist in the dataframe created above. Interestingly the code does compile because R is using some partial matching of names and in this case identifying the "correct" column (`df$temperature`). Regardless it would still be a good idea to fix it to avoid any issues down the line (this does blur into "improvements").
+
+**5b. Fix 5:** I changed the code to reflect the correct full name of the variable (`df$temperature`) as seen in the following chunk:
+
+```{r, include = TRUE, eval = FALSE}
+plot(df$time, df$temperature, type = "l", col = "blue",
+     main = "Temperature over Time",
+     xlab = "Time", ylab = "Temperature (°F)")
+```
+
+# Alterations and Improvements
+While the code now compiles successfully querying the API, creating a dataframe, generating a 2x2 panel of plots, and saving the final data frame as an RDS file there are several improvement I'd recommend making to improve the code's performance and clarity. 
+
+**Improvement 1:** The first (and most significant) suggestion is to utilize `httr2` the successor package to `httr`. This is important as `httr` is no longer recommended by the maintainers and `httr2` makes it easier to make complex requests via the base R pipe (or tidy pipe). This is useful for legibility of code (for full disclosure I'm a huge tidyverse advocate!). 
+
+Modifying the code to use `httr2` requires several modifications. First I modify the preamble to load (and install if required) the `httr2` package.
+
+```{r, include = TRUE, eval = FALSE}
+
+if (!require(httr2)) install.packages("httr2")
+library(httr2)
+
+if (!require(jsonlite)) install.packages("jsonlite")
+library(jsonlite)
+
+```
+
+Next, after reading the documentation for `httr2` the line to query the API `response <- GET(url = base_url, query = params)` becomes in `httr2`:
+
+```{r, include = TRUE, eval = FALSE}
+response <- request(base_url) |>
+  req_url_query(!!!params) |>  # Adds query parameters; more specifically  the Splice operator (!!!) is used to unpack a list of values (in this case taken from the above params) into individual arguments to use in the function. Without the splice this would pass the list as one argument and error out.
+  req_perform()  # Sends request to API to fetch results back to R
+
+```
+
+Then I modify `json_data <- content(response, as = "text", encoding = "UTF-8")` to the following chunk which returns the content as a UTF-8 string. The remainder of the code functions similarly.
+
+```{r, include = TRUE, eval = FALSE}
+json_data <- resp_body_string(response) 
+```
+
+**Improvement 2:** The second broad set of improvements involves adding meaningful sections to the code file to make it more digestible, see also above comments on improving ability to debug the code. Additionally throughout the code file I have included detailed inline comments within the code. Both of these improve clarity.
+
+
+**Improvement 3:** As mentioned above in the errors section, at various points in the code file I now include code such as `head(resp_body_json(response), 5)`, `print(substr(json_data, 1, 100))`, or `str(df)` to inspect the underlying data and verify the output matches expectations.
+
+
+**Improvement 4:** The next improvements concern the visualization. I added a title to the overall set of panels and information on both the source of the data and the authorship of the figure. The new code is displayed below.
+
+```{r, include = TRUE, eval = FALSE}
+
+png(filename = "weather_plots.png", width = 800, height = 800) # Line sets the download parameters for the weather_plots.
+
+par(mfrow = c(2, 2), mar = c(4, 4, 3, 1)) # This line specifies the organization of the following plots first arranging them on a 2x2 panel, then setting the margins (bottom, left, top, right).
+
+# Plot Panel 1: Temperature over Time
+plot(df$time, df$temperature, type = "l", col = "blue",
+     main = "Temperature over Time",
+     xlab = "Time", ylab = "Temperature (°F)")
+
+# Plot Panel 2: Precipitation over Time
+plot(df$time, df$precipitation, type = "l", col = "blue",
+     main = "Precipitation over Time",
+     xlab = "Time", ylab = "Precipitation")
+
+# Plot Panel 3: Relative Humidity over Time
+plot(df$time, df$relative_humidity, type = "l", col = "blue",
+     main = "Relative Humidity over Time",
+     xlab = "Time", ylab = "Relative Humidity (%)")
+
+# Plot Panel 4: Dew Point over Time
+plot(df$time, df$dew_point, type = "l", col = "blue",
+     main = "Dew Point over Time",
+     xlab = "Time", ylab = "Dew Point (°F)")
+
+# Add a Panel title
+mtext("Weather Data Overview", side = 3, line = - 2, outer = TRUE,cex = 2.2, col = "black", font = 2)  #side determines horizontal placement, line vertical.
+
+par(fig = c(0.5, 1, 0.5, 1), new = TRUE) # This defines the top-right area of the second panel so I can add the source and author information
+mtext("Source: Open-Meteo Historical Weather API | Author: Eric Parajon (using code modified from John D. Martin III)", 
+      side = 3, line = 2, cex = 0.8, col = "black", adj = 1) # adj = 1 for right alignment
+
+dev.off() # Closes the plot to save it
+```
+
+**Improvement 5:** The final improvements concerns the output of the closing messaging. I modified to code to check that both the visualization file, and .rds data file are saved before outputting the message `Data download, visualization, and saving complete.`  If one of the files is not present the code will prompt the user to double check it. The code is shown below:
+
+```{r, include = TRUE, eval = FALSE}
+
+# Check if the weather_plots.png file exists
+if (!file.exists("weather_plots.png")) {
+  missing <- "weather_plots.png"
+} 
+
+# Check if the historical_weather_data.rds file exists
+if (!file.exists("historical_weather_data.rds")) {
+  missing <- "historical_weather_data.rds"
+}
+
+# Check if both the above files are present and if so output the completion message
+if (file.exists("weather_plots.png") & file.exists("historical_weather_data.rds")) {
+  cat("Data download, visualization, and saving complete.\n")
+} else {
+  # Print missing file if required
+  cat("This required file is missing:",missing, "\n")
+}
+```
