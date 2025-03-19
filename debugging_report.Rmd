@@ -197,21 +197,27 @@ dev.off() # Closes the plot to save it
 
 ```{r, include = TRUE, eval = FALSE}
 
-# Check if the weather_plots.png file exists
-if (!file.exists("weather_plots.png")) {
-  missing <- "weather_plots.png"
+# First, I create a vector of default values NAs to store name(s) of missing files, this is two elements long to account for the two required files
+
+missing <- c(NA, NA)
+
+# Check if the weather_plots.png file exists (evaluates to TRUE) if it does not write the first element of missing with the name of the file 
+if (file.exists("weather_plots.png")==FALSE) {
+  missing[1] <- "weather_plots.png"
 } 
 
-# Check if the historical_weather_data.rds file exists
-if (!file.exists("historical_weather_data.rds")) {
-  missing <- "historical_weather_data.rds"
+# Check if the historical_weather_data.rds file exists; if it doesn't as before add the name of the file to missing
+if (file.exists("historical_weather_data.rds")==FALSE) {
+  missing[2] <- "historical_weather_data.rds"
 }
 
-# Check if both the above files are present and if so output the completion message
-if (file.exists("weather_plots.png") & file.exists("historical_weather_data.rds")) {
-  cat("Data download, visualization, and saving complete.\n")
+# Check if both the above files are present and if so output the completion message; if not indicate which file is missing
+if (sum(!is.na(missing)) == 0) { # This line ensures both values in the vector are NA (by counting the number of non NA) before printing the completion message
+  cat("Data download, visualization, and saving complete.\n") # Using calls to concatenate to print output
 } else {
-  # Print missing file if required
-  cat("This required file is missing:",missing, "\n")
+  # List missing file(s) if required
+  cat("The required file(s) are missing:\n")
+  cat(na.omit(missing), sep = "\n")
 }
+
 ```
