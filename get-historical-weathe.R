@@ -1,12 +1,12 @@
 # Preamble ----------------------------------------------------------------
-#Eric Parajon (using code modified modified from John D. Martin III)
+# Eric Parajon (using code modified modified from John D. Martin III)
 
-# This code chunk loads (and installs required packages) and sets up the underlying url call, and parameters for the API call.
+# This code chunk loads (and installs required packages) and sets up the underlying url call, and parameters for the API call
 
-if (!require(httr2)) install.packages("httr2",dependencies = TRUE) # Checking if httr package is installed, and installing it (and required depencies) if not
+if (!require(httr2)) install.packages("httr2",dependencies = TRUE) # Checking if httr package is installed, and installing it (and required dependencies) if not
 library(httr2) # loading httr2 for working with web APIs
 
-if (!require(jsonlite)) install.packages("jsonlite",dependencies = TRUE)  # Checking if jsonlite package is installed, and installing it (and required depencies) if not
+if (!require(jsonlite)) install.packages("jsonlite",dependencies = TRUE)  # Checking if jsonlite package is installed, and installing it (and required dependencies) if not
 library(jsonlite) # loading jsonlite to convert JSON data to R objects.
 
 base_url <- "https://archive-api.open-meteo.com/v1/archive" # Open-Meteo API url 
@@ -21,13 +21,13 @@ params <- list( # setting up parameters for the API query
 )
 
 # API Call ----------------------------------------------------------------
-# This code chunk pulls data from the Open-Meteo API (application programming interface).
+# This code chunk pulls data from the Open-Meteo API (application programming interface)
 
 response <- request(base_url) |>
   req_url_query(!!!params) |>  # Adds query parameters; more specifically  the Splice operator (!!!) is used to unpack a list of values (in this case taken from the above params) into individual arguments to use in the function. Without the splice this would pass the list as one argument and error out.
   req_perform()  # Sends request to API to fetch results back to R
 
-# This code checks if the API request was successful and returns an error if it was not.
+# This code checks if the API request was successful and returns an error if it was not
 
 if (response$status != 200) {
   stop("Failed to retrieve data. Status code: ", response$status)
@@ -52,9 +52,9 @@ if (!"hourly" %in% names(weather_data)) {
 }
 
 # Data Frame Creation ----------------------------------------------------------------
-# This code chunk parses the JSON response and creates a data frame from the hourly object of the underlying weather_data.
+# This code chunk parses the JSON response and creates a data frame from the hourly object of the underlying weather_data
 
-# This code pulls the hourly data from the weather_data object and assigns it to the hourly object for further use below.
+# This code pulls the hourly data from the weather_data object and assigns it to the hourly object for further use below
 hourly <- weather_data$hourly
 
 # Inspecting hourly object
@@ -75,9 +75,9 @@ str(df)
 # Visualization ----------------------------------------------------------------
 # This code chunk visualizes key weather parameters over time using base R
 
-png(filename = "weather_plots.png", width = 800, height = 800) # Line sets the download parameters for the weather_plots.
+png(filename = "weather_plots.png", width = 1400, height = 1400) # Line sets the download parameters for the weather_plots
 
-par(mfrow = c(2, 2), mar = c(4, 4, 3, 1)) # This line specifies the organization of the following plots first arranging them on a 2x2 panel, then setting the margins (bottom, left, top, right).
+par(mfrow = c(2, 2), mar = c(4, 4, 3, 1)) # This line specifies the organization of the following plots first arranging them on a 2x2 panel, then setting the margins (bottom, left, top, right)
 
 # Plot Panel 1: Temperature over Time
 plot(df$time, df$temperature, type = "l", col = "blue", # Creating a lineplot (type="l") of temperature over time

@@ -154,13 +154,13 @@ json_data <- resp_body_string(response)
 **Improvement 3:** As mentioned above in the errors section, at various points in the code file I now include code such as `head(resp_body_json(response), 5)`, `print(substr(json_data, 1, 100))`, or `str(df)` to inspect the underlying data and verify the output matches expectations.
 
 
-**Improvement 4:** The next improvements concern the visualization. I first looked up how precipitation was measured and include that information (mm of rain and snow) on the plot. I also added a short title to the overall set of panels and information on both the source of the data and the authorship of the figure. The new code is displayed below.
+**Improvement 4:** The next improvements concern the visualization. I first looked up how precipitation was measured and include that information (mm of rain and snow) on the plot. I also added a short title to the overall set of panels and information on both the source of the data and the authorship of the figure. This also required modifying the dimensions of the figure. The new code is displayed below.
 
 ```{r, include = TRUE, eval = FALSE}
 
-png(filename = "weather_plots.png", width = 800, height = 800) # Line sets the download parameters for the weather_plots.
+png(filename = "weather_plots.png", width = 1400, height = 1400) # Line sets the download parameters for the weather_plots
 
-par(mfrow = c(2, 2), mar = c(4, 4, 3, 1)) # This line specifies the organization of the following plots first arranging them on a 2x2 panel, then setting the margins (bottom, left, top, right).
+par(mfrow = c(2, 2), mar = c(4, 4, 3, 1)) # This line specifies the organization of the following plots first arranging them on a 2x2 panel, then setting the margins (bottom, left, top, right)
 
 # Plot Panel 1: Temperature over Time
 plot(df$time, df$temperature, type = "l", col = "blue", # Creating a lineplot (type="l") of temperature over time
