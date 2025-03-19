@@ -78,7 +78,7 @@ This suspicion is confirmed by inspecting the json_data values with the `print()
 ```{r, include = TRUE, eval = FALSE}
 response <- GET(url = base_url, query = params)
 
-#checking output of small portion of json_data (first 100 characters)
+# checking output of small portion of json_data for debugging purposes (first 100 characters)
 print(substr(json_data, 1, 100))
 ```
 
@@ -160,7 +160,7 @@ json_data <- resp_body_string(response)
 
 png(filename = "weather_plots.png", width = 1400, height = 1400) # Line sets the download parameters for the weather_plots
 
-par(mfrow = c(2, 2), mar = c(4, 4, 3, 1)) # This line specifies the organization of the following plots first arranging them on a 2x2 panel, then setting the margins (bottom, left, top, right)
+par(mfrow = c(2, 2), mar = c(4, 4, 3, 1)) # This line specifies the organization of the following plots first arranging them on a 2x2 grid, then setting the margins (bottom, left, top, right)
 
 # Plot Panel 1: Temperature over Time
 plot(df$time, df$temperature, type = "l", col = "blue", # Creating a lineplot (type="l") of temperature over time
@@ -182,10 +182,10 @@ plot(df$time, df$dew_point, type = "l", col = "blue",
      main = "Dew Point over Time", # title
      xlab = "Time", ylab = "Dew Point (°F)") # axis labels
 
-# Add a title to all four panels (the title is outside the panels)
+# Add a title to all four panels (the title is outside the panels). Mtext is used to add text to the outer margins of the plot, the remaining arguements control placements and aesthetics
 mtext("Weather Data Overview", side = 3, line = - 2, outer = TRUE,cex = 2.2, col = "black", font = 2)  # side determines horizontal placement, line vertical, outer makes it outside the plotting area, cex controls the font size, col sets the text color to black, font sets the font to bold
 
-par(fig = c(0.5, 1, 0.5, 1), new = TRUE) # This defines the top-right area of the second panel so I can add the source and author information
+par(fig = c(0.5, 1, 0.5, 1), new = TRUE) # This defines a new plotting region in the top-right area of the second panel so I can add the source and author information, by using new=TRUE the existing four weather plots are kept and the new text can be added on top
 mtext("Source: Open-Meteo Historical Weather API | Author: Eric Parajon (using code modified from John D. Martin III)", 
       side = 3, line = 2, cex = 0.8, col = "black", adj = 1) # adj = 1 for right alignment
 
