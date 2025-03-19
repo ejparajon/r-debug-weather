@@ -154,7 +154,7 @@ json_data <- resp_body_string(response)
 **Improvement 3:** As mentioned above in the errors section, at various points in the code file I now include code such as `head(resp_body_json(response), 5)`, `print(substr(json_data, 1, 100))`, or `str(df)` to inspect the underlying data and verify the output matches expectations.
 
 
-**Improvement 4:** The next improvements concern the visualization. I added a title to the overall set of panels and information on both the source of the data and the authorship of the figure. The new code is displayed below.
+**Improvement 4:** The next improvements concern the visualization. I first looked up how precipitation was measured and include that information (mm of rain and snow) on the plot. I also added a short title to the overall set of panels and information on both the source of the data and the authorship of the figure. The new code is displayed below.
 
 ```{r, include = TRUE, eval = FALSE}
 
@@ -163,33 +163,34 @@ png(filename = "weather_plots.png", width = 800, height = 800) # Line sets the d
 par(mfrow = c(2, 2), mar = c(4, 4, 3, 1)) # This line specifies the organization of the following plots first arranging them on a 2x2 panel, then setting the margins (bottom, left, top, right).
 
 # Plot Panel 1: Temperature over Time
-plot(df$time, df$temperature, type = "l", col = "blue",
-     main = "Temperature over Time",
-     xlab = "Time", ylab = "Temperature (°F)")
+plot(df$time, df$temperature, type = "l", col = "blue", # Creating a lineplot (type="l") of temperature over time
+     main = "Temperature over Time", # title 
+     xlab = "Time", ylab = "Temperature (°F)") # axis labels
 
 # Plot Panel 2: Precipitation over Time
-plot(df$time, df$precipitation, type = "l", col = "blue",
-     main = "Precipitation over Time",
-     xlab = "Time", ylab = "Precipitation")
+plot(df$time, df$precipitation, type = "l", col = "blue", # Again a lineplot this time of precipitation
+     main = "Precipitation (rain + snow) over Time", # title
+     xlab = "Time", ylab = "Precipitation (mm)") # axis labels
 
 # Plot Panel 3: Relative Humidity over Time
 plot(df$time, df$relative_humidity, type = "l", col = "blue",
-     main = "Relative Humidity over Time",
-     xlab = "Time", ylab = "Relative Humidity (%)")
+     main = "Relative Humidity over Time", # title
+     xlab = "Time", ylab = "Relative Humidity (%)") # axis labels
 
 # Plot Panel 4: Dew Point over Time
 plot(df$time, df$dew_point, type = "l", col = "blue",
-     main = "Dew Point over Time",
-     xlab = "Time", ylab = "Dew Point (°F)")
+     main = "Dew Point over Time", # title
+     xlab = "Time", ylab = "Dew Point (°F)") # axis labels
 
-# Add a Panel title
-mtext("Weather Data Overview", side = 3, line = - 2, outer = TRUE,cex = 2.2, col = "black", font = 2)  #side determines horizontal placement, line vertical.
+# Add a title to all four panels (the title is outside the panels)
+mtext("Weather Data Overview", side = 3, line = - 2, outer = TRUE,cex = 2.2, col = "black", font = 2)  # side determines horizontal placement, line vertical, outer makes it outside the plotting area, cex controls the font size, col sets the text color to black, font sets the font to bold
 
 par(fig = c(0.5, 1, 0.5, 1), new = TRUE) # This defines the top-right area of the second panel so I can add the source and author information
 mtext("Source: Open-Meteo Historical Weather API | Author: Eric Parajon (using code modified from John D. Martin III)", 
       side = 3, line = 2, cex = 0.8, col = "black", adj = 1) # adj = 1 for right alignment
 
 dev.off() # Closes the plot to save it
+
 ```
 
 **Improvement 5:** The final improvements concerns the output of the closing messaging. I modified to code to check that both the visualization file, and .rds data file are saved before outputting the message `Data download, visualization, and saving complete.`  If one of the files is not present the code will prompt the user to double check it. The code is shown below:

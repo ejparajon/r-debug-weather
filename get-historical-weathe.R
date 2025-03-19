@@ -1,10 +1,12 @@
 # Preamble ----------------------------------------------------------------
+#Eric Parajon (using code modified modified from John D. Martin III)
+
 # This code chunk loads (and installs required packages) and sets up the underlying url call, and parameters for the API call.
 
-if (!require(httr2)) install.packages("httr2") # Checking if httr package is installed, and installing it if not
+if (!require(httr2)) install.packages("httr2",dependencies = TRUE) # Checking if httr package is installed, and installing it (and required depencies) if not
 library(httr2) # loading httr2 for working with web APIs
 
-if (!require(jsonlite)) install.packages("jsonlite") # Checking if jsonlite package is installed, and installing it if not
+if (!require(jsonlite)) install.packages("jsonlite",dependencies = TRUE)  # Checking if jsonlite package is installed, and installing it (and required depencies) if not
 library(jsonlite) # loading jsonlite to convert JSON data to R objects.
 
 base_url <- "https://archive-api.open-meteo.com/v1/archive" # Open-Meteo API url 
@@ -19,7 +21,7 @@ params <- list( # setting up parameters for the API query
 )
 
 # API Call ----------------------------------------------------------------
-# This code chunk pulls data from the Open-Meteo API.
+# This code chunk pulls data from the Open-Meteo API (application programming interface).
 
 response <- request(base_url) |>
   req_url_query(!!!params) |>  # Adds query parameters; more specifically  the Splice operator (!!!) is used to unpack a list of values (in this case taken from the above params) into individual arguments to use in the function. Without the splice this would pass the list as one argument and error out.
@@ -60,7 +62,7 @@ str(hourly)
 
 # Creating a dataframe of relevant variables
 df <- data.frame(
-  time = as.POSIXct(hourly$time, format = "%Y-%m-%dT%H:%M", tz = "America/New_York"),
+  time = as.POSIXct(hourly$time, format = "%Y-%m-%dT%H:%M", tz = "America/New_York"), # formats the time variable to interpret time like 2024-01-02T00:00
   temperature = hourly$temperature_2m,
   precipitation = hourly$precipitation,
   relative_humidity = hourly$relative_humidity_2m,
@@ -84,8 +86,8 @@ plot(df$time, df$temperature, type = "l", col = "blue", # Creating a lineplot (t
 
 # Plot Panel 2: Precipitation over Time
 plot(df$time, df$precipitation, type = "l", col = "blue", # Again a lineplot this time of precipitation
-     main = "Precipitation over Time", # title
-     xlab = "Time", ylab = "Precipitation") # axis labels
+     main = "Precipitation (rain + snow) over Time", # title
+     xlab = "Time", ylab = "Precipitation (mm)") # axis labels
 
 # Plot Panel 3: Relative Humidity over Time
 plot(df$time, df$relative_humidity, type = "l", col = "blue",
