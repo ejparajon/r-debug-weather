@@ -22,16 +22,21 @@ params <- list( # Setting up parameters for the API query
 
 # API Call ----------------------------------------------------------------
 # This code chunk pulls data from the Open-Meteo API (application programming interface)
+# It additionally includes error checking functionality to determine if the response is valid
 
-response <- request(base_url) |>
-  req_url_query(!!!params) |>  # Adds query parameters; more specifically  the Splice operator (!!!) is used to unpack a list of values (in this case taken from the above params) into individual arguments to use in the function. Without it the list would be passed as a single argument leading to an error
-  req_perform()  # Sends request to API to fetch results back to R
-
-# This code checks if the API request was successful (a status code of 200) and returns an error if it was not, and stops the code running
-
-if (response$status != 200) {
-  stop("Failed to retrieve data. Status code: ", response$status)
-}
+response <- tryCatch( # Wrapping the API query in a tryCatch block to capture any errors that occur during the request
+  request(base_url) |> # Requesting at the given URL
+    req_url_query(!!!params) |>   # Adds query parameters; more specifically  the Splice operator (!!!) is used to unpack a list of values (in this case taken from the above params) into individual arguments to use in the function. Without it the list would be passed as a single argument leading to an error
+    req_error(is_error = ~ { # This code checks if the API request was successful (a status_code of 200) and returns an error if it was not, and stops the code running (~ defines the start of the function)
+      if (.x$status_code != 200) # Checks the current value being processed (.x) to determine if status differs from 200  
+        stop("Failed to retrieve data. Status code:", .x$status_code) # error code reporting
+      FALSE  # Ensures successful responses don't trigger an error
+    }) |>  
+    req_perform(),   # Sends request to API to fetch results back to R
+  error = function(e) { # Creating a function to deal with messages from the tryCatch: This defines what happens if an error (such as an incorrect url, or a network issue) occurs
+    stop("Invalid URL or network error:", e$message) # This line helps parse and report the error message (from e the error object) and stops the code from running if there is an error 
+  }
+)
 
 # Checking data from API call for debugging purposes (first 5 variables)
 head(resp_body_json(response), 5) 
@@ -75,7 +80,7 @@ str(df)
 # Visualization ----------------------------------------------------------------
 # This code chunk visualizes key weather parameters over time using base R
 
-png(filename = "weather_plots.png", width = 1400, height = 1400) # Line sets the download parameters for the weather_plots
+png(filename = "weather_plots.png", width = 1400, height = 1400) # Line sets the download parameters for the weather_plots 
 
 par(mfrow = c(2, 2), mar = c(4, 4, 3, 1)) # This line specifies the organization of the following plots first arranging them on a 2x2 grid, then setting the margins (bottom, left, top, right)
 
@@ -124,7 +129,7 @@ if (file.exists("weather_plots.png")==FALSE) {
   missing[1] <- "weather_plots.png"
 } 
 
-# Check if the historical_weather_data.rds file exists; if it doesn't as before add the name of the file to missing
+# Check if the historical_weather_data.rds file exists and if it doesn't add the name of the file to missing
 if (file.exists("historical_weather_data.rds")==FALSE) {
   missing[2] <- "historical_weather_data.rds"
 }
@@ -137,3 +142,4 @@ if (sum(!is.na(missing)) == 0) { # This line ensures both values in the vector a
   cat("The required file(s) are missing:\n")
   cat(na.omit(missing), sep = "\n") # na.omit(missing) removes the NA values from the missing vector, so that only the missing file names are printed
 }
+

@@ -142,6 +142,25 @@ response <- request(base_url) |>
 
 ```
 
+I also further modified the code chunk to have more robust error handling using the `req_perform()` functionality from `httr2` in tandem with tryCatch (to detect network errors) per the advice in the `httr2` documentation. This allows the user to determine if it's an API error that causes the HTTP request to fail such as a 404 (`req_error`), or an additional type of network error such as typos in the url (`tryCatch`) that impacts the underlying data pull. This could be helpful for debugging purposes.
+
+```{r, include = TRUE, eval = FALSE}
+response <- tryCatch( # wrapping the API query in a tryCatch block to capture any errors that occur during the request
+  request(base_url) |> # requesting at the given URL
+    req_url_query(!!!params) |>   # Adds query parameters; more specifically  the Splice operator (!!!) is used to unpack a list of values (in this case taken from the above params) into individual arguments to use in the function. Without it the list would be passed as a single argument leading to an error
+    req_error(is_error = ~ { # This code checks if the API request was successful (a status_code of 200) and returns an error if it was not, and stops the code running (~ defines the start of the function)
+      if (.x$status_code != 200) # Checks the current value being processed (.x) to determine if status differs from 200  
+        stop("Failed to retrieve data. Status code:", .x$status_code) # error code reporting
+      FALSE  # Ensures successful responses don't trigger an error
+    }) |>  
+    req_perform(),   # Sends request to API to fetch results back to R
+  error = function(e) { # Creating a function to deal with messages from the tryCatch: This defines what happens if an error (such as an incorrect url, or a network issue) occurs
+    stop("Invalid URL or network error:", e$message) # This line helps parse and report the error message (from e the error object) and stops the code from running if there is an error 
+  }
+)
+
+```
+
 Then I modify `json_data <- content(response, as = "text", encoding = "UTF-8")` to the following chunk which returns the content as a UTF-8 string. The remainder of the code functions similarly.
 
 ```{r, include = TRUE, eval = FALSE}
