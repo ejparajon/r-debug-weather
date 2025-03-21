@@ -7,7 +7,7 @@ if (!require(httr2)) install.packages("httr2",dependencies = TRUE) # Checking if
 library(httr2) # Loads the httr2 package; used for working with web APIs
 
 if (!require(jsonlite)) install.packages("jsonlite",dependencies = TRUE)  # Checking if jsonlite package is installed, and installing it (and required dependencies) if not
-library(jsonlite) # Loads the jsonlite; used to convert JSON data to R objects
+library(jsonlite) # Loads the jsonlite pacakge; used to convert JSON data to R objects
 
 base_url <- "https://archive-api.open-meteo.com/v1/archive" # Open-Meteo API url 
 params <- list( # Setting up parameters for the API query
@@ -80,9 +80,10 @@ str(df)
 # Visualization ----------------------------------------------------------------
 # This code chunk visualizes key weather parameters over time using base R
 
-png(filename = "weather_plots.png", width = 1400, height = 1400) # Line sets the download parameters for the weather_plots 
+png(filename = "weather_plots.png", width = 1500, height = 1500) # Line sets the download parameters for the weather_plots 
 
-par(mfrow = c(2, 2), mar = c(4, 4, 3, 1)) # This line specifies the organization of the following plots first arranging them on a 2x2 grid, then setting the margins (bottom, left, top, right)
+par(mfrow = c(2, 2), mar = c(4, 4.5, 4, 1)) 
+# This line specifies the organization of the following plots first arranging them on a 2x2 grid, then setting the margins (bottom, left, top, right)
 
 # Plot Panel 1: Temperature over Time
 plot(df$time, df$temperature, type = "l", col = "blue", # Creating a lineplot (type="l") of temperature over time
@@ -109,7 +110,7 @@ mtext("Weather Data Overview", side = 3, line = - 2, outer = TRUE,cex = 2.2, col
 
 par(fig = c(0.5, 1, 0.5, 1), new = TRUE) # This defines a new plotting region in the top-right area of the second panel so I can add the source and author information, by using new=TRUE the existing four weather plots are kept and the new text can be added on top
 mtext("Source: Open-Meteo Historical Weather API | Author: Eric Parajon (using code modified from John D. Martin III)", 
-      side = 3, line = 2, cex = 0.8, col = "black", adj = 1) # adj = 1 for right alignment
+      side = 3, line = 2.5, cex = 0.9, col = "black", adj = 1) # adj = 1 for right alignment
 
 dev.off() # Closes the plot to save it
 
