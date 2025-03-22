@@ -7,7 +7,7 @@ if (!require(httr2)) install.packages("httr2",dependencies = TRUE) # Checking if
 library(httr2) # Loads the httr2 package; used for working with web APIs
 
 if (!require(jsonlite)) install.packages("jsonlite",dependencies = TRUE)  # Checking if jsonlite package is installed, and installing it (and required dependencies) if not
-library(jsonlite) # Loads the jsonlite pacakge; used to convert JSON data to R objects
+library(jsonlite) # Loads the jsonlite package; used to convert JSON data to R objects
 
 base_url <- "https://archive-api.open-meteo.com/v1/archive" # Open-Meteo API url 
 params <- list( # Setting up parameters for the API query
@@ -105,7 +105,7 @@ plot(df$time, df$dew_point, type = "l", col = "blue",
      main = "Dew Point over Time", # title
      xlab = "Time", ylab = "Dew Point (°F)") # axis labels
 
-# Add a title to all four panels (the title is outside the panels). Mtext is used to add text to the outer margins of the plot, the remaining arguements control placements and aesthetics
+# Add a title to all four panels (the title is outside the panels). Mtext is used to add text to the outer margins of the plot, the remaining arguments control placements and aesthetics
 mtext("Weather Data Overview", side = 3, line = - 2, outer = TRUE,cex = 2.2, col = "black", font = 2)  # side determines horizontal placement, line vertical, outer makes it outside the plotting area, cex controls the font size, col sets the text color to black, font sets the font to bold
 
 par(fig = c(0.5, 1, 0.5, 1), new = TRUE) # This defines a new plotting region in the top-right area of the second panel so I can add the source and author information, by using new=TRUE the existing four weather plots are kept and the new text can be added on top

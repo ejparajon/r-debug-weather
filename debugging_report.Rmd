@@ -24,9 +24,9 @@ The following is a brief debugging report that:
 
 # Description of errors and approach to corrections
 
-To begin I modified my R global options with the following line of code `options(error = function() traceback(3))`. This addition customizes what happens when an error occurs by for printing a stacktrace (3 deep) on error rather than just printing the error message thus making it easier to identify what caused the error to occur. 
+To begin I modified my R global options with the following line of code `options(error = function() traceback(3))`. This addition customizes what happens when an error occurs by printing a stacktrace (3 deep) on error rather than just printing the error message thus making it easier to identify what caused the error to occur. 
 
-Briefly, my approach to coding is to think of R code in terms of digestible chunks so that’s how I started debugging this code starting with the preamble. It’s also why in my alterations to the code file I adding clear sections and headers. As a result of following this approach I noticed an error on the first line of the code file.
+Briefly, my approach to coding is to think of R code in terms of digestible chunks so that’s how I started debugging this code starting with the preamble. It’s also why in my alterations to the code file I added clear sections and headers. As a result of following this approach I noticed an error on the first line of the code file.
 
 **1a. Error 1:** the `library()` package to load the namespace of a package was misspelled as seen in the code chunk below. This resulted in the following error `Error in libray(httr) : could not find function "libray"`.
 
@@ -92,7 +92,7 @@ List of 5
  $ relative_humidity_2m: int [1:96408] 74 74 73 71 73 77 79 79 79 79 ...
  $ dew_point_2m        : num [1:96408] 22.5 22.7 22.5 20.9 22.3 23.8 24.5 24.1 23.5 23 ...
 ```
-I then examined the code for the creation of the dataframe and noticed a few issues. First, there is a typo in the creation of the `time` variable (`formt`). Additionally, the `data.frame` call refers to `hourly$temp` when the temperature variable is actually called `temperature_2m` in the `hourly` object. While these issues do not cause the code to "error out" it's still best practices to fix.
+I then examined the code for the creation of the dataframe and noticed a few issues. First, there is a typo in the creation of the `time` variable (`formt`). Additionally, the `data.frame` call refers to `hourly$temp` when the temperature variable is actually called `temperature_2m` in the `hourly` object (see below comment in 5a on partial matching). While these issues do not cause the code to "error out" it's still best practice to fix.
 
 **4b. Fix 4:**
 These two changes result in the following code to generate the `df` dataframe. This results in 96408 obs. of  5 variables again our desired output:
@@ -144,7 +144,7 @@ response <- request(base_url) |>
 
 ```
 
-I also further modified the code chunk to have more robust error handling using the `req_perform()` functionality from `httr2` in tandem with tryCatch (to detect network errors) per the advice in the `httr2` documentation. This allows the user to determine if it's an API error that causes the HTTP request to fail such as a 404 (`req_error`), or an additional type of network error such as typos in the url (`tryCatch`) that impacts the underlying data pull. This could be helpful for debugging purposes.
+I also further modified the code chunk to have more robust error handling using the `req_perform()` functionality from `httr2` in tandem with tryCatch (to detect broad network errors) per the advice in the `httr2` documentation. This allows the user to determine if it's an API error that causes the HTTP request to fail such as a 404 (inspected by `req_error`), or a broader type of network error such as typos in the url (`tryCatch`) that impacts the underlying data pull. This could be helpful for debugging purposes.
 
 ```{r, include = TRUE, eval = FALSE}
 response <- tryCatch( # wrapping the API query in a tryCatch block to capture any errors that occur during the request
@@ -204,7 +204,7 @@ plot(df$time, df$dew_point, type = "l", col = "blue",
      main = "Dew Point over Time", # title
      xlab = "Time", ylab = "Dew Point (°F)") # axis labels
 
-# Add a title to all four panels (the title is outside the panels). Mtext is used to add text to the outer margins of the plot, the remaining arguements control placements and aesthetics
+# Add a title to all four panels (the title is outside the panels). Mtext is used to add text to the outer margins of the plot, the remaining arguments control placements and aesthetics
 mtext("Weather Data Overview", side = 3, line = - 2, outer = TRUE,cex = 2.2, col = "black", font = 2)  # side determines horizontal placement, line vertical, outer makes it outside the plotting area, cex controls the font size, col sets the text color to black, font sets the font to bold
 
 par(fig = c(0.5, 1, 0.5, 1), new = TRUE) # This defines a new plotting region in the top-right area of the second panel so I can add the source and author information, by using new=TRUE the existing four weather plots are kept and the new text can be added on top
@@ -214,7 +214,7 @@ mtext("Source: Open-Meteo Historical Weather API | Author: Eric Parajon (using c
 dev.off() # Closes the plot to save it
 ```
 
-**Improvement 5:** The final improvements concerns the output of the closing messaging. I modified to code to check that both the visualization file, and .rds data file are saved before outputting the message `Data download, visualization, and saving complete.`  If one of the files is not present the code will prompt the user to double check it. The code is shown below:
+**Improvement 5:** The final improvements concern the output of the closing messaging. I modified the code to check that both the visualization file and .rds data file are saved before outputting the message `Data download, visualization, and saving complete.` If one of the files is not present the code will prompt the user to double check it. The code is shown below:
 
 ```{r, include = TRUE, eval = FALSE}
 
