@@ -73,7 +73,7 @@ params <- list(
 
 This suspicion is confirmed by inspecting the json_data values with `print()` which returns `[1] ""` indicating the data is empty. As `response$status` is returning `200` this indicates there wasn't an error in accessing the actual API from the `GET()` so I then turn to inspecting the rest of the call which reveals a typo `qury = params`. 
 
-3b. Fix 3: I fixed the `qury` typo to `query` and re-ran the `print()`, this time only calling for a small portion of the data to see if the output is as expected.
+**3b. Fix 3:** I fixed the `qury` typo to `query` and re-ran the `print()`, this time only calling for a small portion of the data to see if the output is as expected.
 
 ```{r, include = TRUE, eval = FALSE}
 response <- GET(url = base_url, query = params)
